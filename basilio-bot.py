@@ -62,11 +62,17 @@ def handleMsg(msg):
         return
     if (content_type == 'text'):
         text    = msg['text']
-        if text == '/call':
+        if text == '/callandshow':
             state_machine.setStates([StateMachine.Callhim, StateMachine.Playcall, StateMachine.Recordhim])
             state_machine.progress(chat_id)
-        if text == '/callandwait':
+        elif text == '/callwaitandshow':
             state_machine.setStates([StateMachine.Callhim, StateMachine.Playcall, StateMachine.Waitforhim, StateMachine.Recordhim])
+            state_machine.progress(chat_id)
+        elif text == '/waitandshow':
+            state_machine.setStates([StateMachine.Waitforhim, StateMachine.Recordhim])
+            state_machine.progress(chat_id)
+        elif text == '/show':
+            state_machine.setStates([StateMachine.Recordhim])
             state_machine.progress(chat_id)
     elif (content_type == 'voice'):
             file_id = msg['voice']['file_id']

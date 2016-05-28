@@ -1,2 +1,4 @@
-call - Call Basilio and record a video
-callandwait - Call Basilio wait for him and record a video
+callandshow - Call Basilio and record a video
+callwaitandshow - Call Basilio wait for him and record a video
+waitandshow - Wait for him and record a video
+show - Just record a video of the place
