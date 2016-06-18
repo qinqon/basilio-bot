@@ -12,6 +12,7 @@ class StateMachine:
         self.bot = bot
         self.basilio = basilio
         self.setStates([])
+        self.state_index = 0
     
     def setStates(self, states):
         self.state_index = -1
@@ -19,8 +20,9 @@ class StateMachine:
 
     def progress(self, content):
         self.state_index += 1
-        state = self.states[self.state_index]
-        self.runState(state, content)
+        if len(self.states) > self.state_index:
+	    state = self.states[self.state_index]
+            self.runState(state, content)
 
     def runState(self, state, content):
         if state == StateMachine.Kickstalker:
@@ -46,8 +48,9 @@ class StateMachine:
 
         elif state == StateMachine.Playcall:
             chat_id, file_id = content
-            bot.download_file(file_id, '/tmp/hi.ogg')
-            basilio.callHim('/tmp/hi.ogg')
+	    file_url='https://api.telegram.org/file/bot%s/%s' % (args.token, bot.getFile(file_id)['file_path'])
+            print "file_url" + file_url
+            basilio.callHim(file_url)
             self.progress(chat_id)
             
 
