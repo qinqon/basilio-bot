@@ -35,8 +35,8 @@ class Servo:
 
 
 servo = Servo()
-servo.moveToLeft90() 
-servo.moveToLeft45() 
-servo.moveToCenter() 
-servo.moveToRight45() 
-servo.moveToRight90() 
+while True:
+   servo.moveToLeft90() 
+   servo.moveToLeft45() 
+   servo.moveToRight90() 
+   servo.moveToCenter()
