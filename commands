@@ -2,3 +2,5 @@ callandshow - Call Basilio and record a video
 callwaitandshow - Call Basilio wait for him and record a video
 waitandshow - Wait for him and record a video
 show - Just record a video of the place
+addcryalarm - Send you a message if he is crying
+cancelcryalarm - Cancel the current cry alarm

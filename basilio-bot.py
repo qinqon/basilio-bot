@@ -1,13 +1,18 @@
-#!/usr/bin/env python
+#!/usr/bin/env python 
 import os
 import argparse
 import telepot
 import basilio
 import time
 import os
+import cry_detector
+import basilio
+import periodic_timer
+
+from threading import Thread
 
 class StateMachine:
-    Kickstalker, Recordhim, Waitforhim, Playcall, Callhim, Unknown = range(6)
+    Cancelcryalarm, Addcryalarm, Kickstalker, Recordhim, Waitforhim, Playcall, Callhim, Unknown = range(8)
     def __init__(self, bot, basilio):
         self.bot = bot
         self.basilio = basilio
@@ -45,14 +50,23 @@ class StateMachine:
                 self.progress(chat_id)
             else:
                 bot.sendMessage(chat_id, "He is not here")
-
+         
         elif state == StateMachine.Playcall:
             chat_id, file_id = content
-	    file_url='https://api.telegram.org/file/bot%s/%s' % (args.token, bot.getFile(file_id)['file_path'])
-            print "file_url" + file_url
+            file_url='https://api.telegram.org/file/bot%s/%s' % (args.token, bot.getFile(file_id)['file_path'])
             basilio.callHim(file_url)
             self.progress(chat_id)
-            
+        elif state == StateMachine.Addcryalarm:
+            chat_id = content
+            bot.sendMessage(chat_id, "Starting baby cry alarm")
+            cry_detector.register(lambda: periodic_timer.start(lambda chat_id=chat_id: bot.sendMessage(chat_id, "Baby is on fire!!!")))                        
+            self.progress(chat_id)
+        elif state == StateMachine.Cancelcryalarm:
+            chat_id = content
+            bot.sendMessage(chat_id, "Clearing baby cry alarm")
+            periodic_timer.cancel()
+            self.progress(chat_id)
+
 
 def handleMsg(msg):
     global state_machine
@@ -77,6 +91,12 @@ def handleMsg(msg):
         elif text == '/show':
             state_machine.setStates([StateMachine.Recordhim])
             state_machine.progress(chat_id)
+        elif text == '/addcryalarm':
+            state_machine.setStates([StateMachine.Addcryalarm])
+            state_machine.progress(chat_id)
+        elif text == '/cancelcryalarm':
+            state_machine.setStates([StateMachine.Cancelcryalarm, StateMachine.Addcryalarm])
+            state_machine.progress(chat_id)
     elif (content_type == 'voice'):
             file_id = msg['voice']['file_id']
             state_machine.progress((chat_id, file_id)) 
@@ -92,11 +112,20 @@ args = parser.parse_args()
 # because tokens are supposed to be kept secret.
 bot = telepot.Bot(args.token)
 basilio = basilio.Basilio()
+cry_detector = cry_detector.CryDetector(threshold=20000)
+
 state_machine = StateMachine(bot, basilio)
 bot.message_loop(handleMsg)
 print ('Listening ...')
 
+cry_detector_thread = Thread(target = lambda: cry_detector.start())
+cry_detector_thread.daemon = True
+cry_detector_thread.start()
+
+periodic_timer = periodic_timer.PeriodicTimer(1)
 
 # Keep the program running.
 while 1:
 	time.sleep(10)
+
+cry_detector_thread.join()
